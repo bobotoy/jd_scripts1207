@@ -31,11 +31,10 @@ const JD_API_HOST = 'https://m.jingxi.com';
 const notify = $.isNode() ? require('./sendNotify') : '';
 let jdNotify = true;//是否关闭通知，false打开通知推送，true关闭通知推送
 const randomCount = $.isNode() ? 20 : 5;
-let tuanActiveId = `6S9y4sJUfA2vPQP6TLdVIQ==`;
+let tuanActiveId = `t2cdKwg2QPBzAqd5KMCNHg==`;
 const jxOpenUrl = `openjd://virtual?params=%7B%20%22category%22:%20%22jump%22,%20%22des%22:%20%22m%22,%20%22url%22:%20%22https://wqsd.jd.com/pingou/dream_factory/index.html%22%20%7D`;
 let cookiesArr = [], cookie = '', message = '';
-const inviteCodes = ['05tfe7_atmkggWus12BPbQ==@LDB0ch60vFA5g5dDUkH9hA==@Qw52BPIv6c_mchV7vruxzA==@y4nKp0iB1WZZ_jAE10cttw==@R3RhRk4tNdw1gi3_9Pn6LQ==@oITNgDJvBecBpsx3zv3b-A==@NeuVHXg0vw8-QRJS6fmL7A==@_BDKVoB5GwiWpDGS-XmjGw==@HUJ2O_0p_vfKmdtrd1PH6A==@ywJR3XfRtJKSZEO3L-AGQw==@rPtEhirgGvPefl2POGU2ww==@3GPLY9X60q0IiuNNjNdZ5Q=='];
-
+const inviteCodes = [`NeuVHXg0vw8-QRJS6fmL7A==@_BDKVoB5GwiWpDGS-XmjGw==@HUJ2O_0p_vfKmdtrd1PH6A==@ywJR3XfRtJKSZEO3L-AGQw==`];
 const jdCookieNode = $.isNode() ? require('./jdCookie.js') : '';
 if ($.isNode()) {
   Object.keys(jdCookieNode).forEach((item) => {
@@ -567,8 +566,8 @@ function userInfo() {
                 } else if (data.factoryList && !data.productionList) {
                   console.log(`【提示】京东账号${$.index}[${$.nickName}]京喜工厂未选购商品\n请手动去京东APP->游戏与互动->查看更多->京喜工厂 选购\n`)
                   let nowTimes = new Date(new Date().getTime() + new Date().getTimezoneOffset()*60*1000 + 8*60*60*1000);
-                  if (nowTimes.getHours() % 12 === 0) {
-                    //如按每小时运行一次，则此处将一天推送2次提醒
+                  if (nowTimes.getHours() % 6 === 0) {
+                    //如按每小时运行一次，则此处将一天推送4次提醒
                     $.msg($.name, '提醒⏰', `京东账号${$.index}[${$.nickName}]京喜工厂未选择商品\n请手动去京东APP->游戏与互动->查看更多->京喜工厂 选择商品`);
                     if ($.isNode()) await notify.sendNotify(`${$.name} - 京东账号${$.index} - ${$.nickName}`, `京东账号${$.index}[${$.nickName}]京喜工厂未选择商品\n请手动去京东APP->游戏与互动->查看更多->京喜工厂 选择商品`)
                   }
@@ -1026,7 +1025,7 @@ async function joinLeaderTuan() {
     }
   }
   $.tuanIdS = null;
-  if (!$.tuanIdS) await updateTuanIdsCDN('https://gitee.com/shylocks/updateTeam/raw/main/jd_updateFactoryTuanId.json');
+  if (!$.tuanIdS) await updateTuanIdsCDN('https://raw.githubusercontent.com/nbzongzong/updateTeam/master/jd_updateFactoryTuanId.json');
   if ($.tuanIdS && $.tuanIdS.tuanIds) {
     for (let tuanId of $.tuanIdS.tuanIds) {
       if (!tuanId) continue
@@ -1185,7 +1184,7 @@ function tuanAward(activeId, tuanId, isTuanLeader = true) {
     })
   })
 }
-function updateTuanIds(url = 'https://raw.githubusercontent.com/lxk0301/updateTeam/master/jd_updateFactoryTuanId.json') {
+function updateTuanIds(url = 'https://raw.githubusercontent.com/nbzongzong/updateTeam/master/jd_updateFactoryTuanId.json') {
   return new Promise(resolve => {
     $.get({url}, (err, resp, data) => {
       try {
@@ -1202,7 +1201,7 @@ function updateTuanIds(url = 'https://raw.githubusercontent.com/lxk0301/updateTe
     })
   })
 }
-function updateTuanIdsCDN(url = 'https://raw.fastgit.org/lxk0301/updateTeam/master/jd_updateFactoryTuanId.json') {
+function updateTuanIdsCDN(url = 'https://raw.githubusercontent.com/nbzongzong/updateTeam/master/jd_updateFactoryTuanId.json') {
   return new Promise(async resolve => {
     $.get({url,
       headers:{
@@ -1332,19 +1331,20 @@ function shareCodesFormat() {
       const tempIndex = $.index > inviteCodes.length ? (inviteCodes.length - 1) : ($.index - 1);
       $.newShareCodes = inviteCodes[tempIndex].split('@');
     }
-    const readShareCodeRes = await readShareCode();
-    if (readShareCodeRes && readShareCodeRes.code === 200) {
-      $.newShareCodes = [...new Set([...$.newShareCodes, ...(readShareCodeRes.data || [])])];
-    }
+//屏蔽自动获取互助码
+    //const readShareCodeRes = await readShareCode();
+    //if (readShareCodeRes && readShareCodeRes.code === 200) {
+    //  $.newShareCodes = [...new Set([...$.newShareCodes, ...(readShareCodeRes.data || [])])];
+    //}
     console.log(`第${$.index}个京东账号将要助力的好友${JSON.stringify($.newShareCodes)}`)
     resolve();
   })
 }
 function requireConfig() {
   return new Promise(async resolve => {
-    await updateTuanIdsCDN('https://gitee.com/lxk0301/updateTeam/raw/master/jd_updateFactoryTuanId.json');
-    if (!$.tuanIdS) await updateTuanIds();
-    if (!$.tuanIdS) await updateTuanIdsCDN('https://cdn.jsdelivr.net/gh/lxk0301/updateTeam@master/jd_updateFactoryTuanId.json');
+    await updateTuanIdsCDN('https://raw.githubusercontent.com/nbzongzong/updateTeam/master/jd_updateFactoryTuanId.json');
+    // if (!$.tuanIdS) await updateTuanIds();
+    // if (!$.tuanIdS) await updateTuanIdsCDN('https://cdn.jsdelivr.net/gh/lxk0301/updateTeam@master/jd_updateFactoryTuanId.json');
     if ($.tuanIdS && $.tuanIdS.tuanActiveId) {
       tuanActiveId = $.tuanIdS.tuanActiveId;
     }
